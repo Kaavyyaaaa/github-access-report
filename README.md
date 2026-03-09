@@ -1,184 +1,188 @@
-# GitHub Access Report Service
+# GitHub Access Report API
 
-A Spring Boot REST API that generates a report showing **which users have access to which repositories** in a GitHub organization.
+This project was developed as part of a **Backend Engineering Assignment for Cloudeagle**.
 
----
+The goal of the assignment is to build a service that connects to the GitHub API and generates a report showing **which users have access to which repositories within a GitHub organization**.
 
-## Features
-
-- ✅ Authenticates with GitHub using a Personal Access Token
-- ✅ Fetches all repositories in an organization (with pagination)
-- ✅ Fetches all collaborators per repo (with pagination)
-- ✅ Processes repos **in parallel** (10 concurrent requests) for efficiency at scale
-- ✅ **Caches** results for 10 minutes to avoid redundant API calls
-- ✅ Supports orgs with **100+ repos** and **1000+ users**
-- ✅ Returns structured JSON reports
+The application authenticates with GitHub, retrieves repositories and collaborators, and exposes a REST API endpoint that returns an aggregated access report.
 
 ---
 
-## Requirements
+# Problem Statement
 
-- Java 17+
-- Maven 3.8+
-- A GitHub Personal Access Token (see below)
+Organizations often need visibility into **who has access to which repositories** in GitHub.
+
+This service connects to the GitHub API and generates an access report for a given organization by:
+
+* Fetching all repositories in the organization
+* Identifying users who have access to each repository
+* Aggregating the information into a structured report
+
+The report is exposed through a REST API endpoint in JSON format.
 
 ---
 
-## How to Configure Authentication
+# Features
 
-### Step 1: Generate a GitHub Personal Access Token
+* GitHub API integration using **Spring WebClient**
+* Secure authentication using **GitHub Personal Access Token**
+* Retrieves repositories from a GitHub organization
+* Fetches collaborators for each repository
+* Aggregates data into a **user → repository access mapping**
+* Exposes REST API endpoint for generating reports
+* Pagination support for large organizations
+* Clean layered architecture (Controller → Service → Client)
 
-1. Go to [GitHub Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens](https://github.com/settings/tokens?type=beta)
-2. Click **"Generate new token"**
-3. Select your target organization under "Resource owner"
-4. Grant the following permissions:
-   - **Repository permissions**: `Metadata` → Read-only
-   - **Organization permissions**: `Members` → Read-only
-5. Copy the token
+---
 
-### Step 2: Set the Token as an Environment Variable
+# Tech Stack
 
-```bash
-export GITHUB_TOKEN=github_pat_your_token_here
+* **Java 17**
+* **Spring Boot**
+* **Spring WebFlux (WebClient)**
+* **Maven**
+* **GitHub REST API**
+
+---
+
+# Project Structure
+
+```
+src/main/java/com/githubreport
+
+controller
+    AccessReportController.java
+
+service
+    AccessReportService.java
+    GitHubClient.java
+
+model
+    GitHubRepo.java
+    RepoCollaborator.java
+
+GitHubAccessReportApplication.java
 ```
 
-> ⚠️ **Never** hardcode your token in `application.properties` or commit it to Git.
-
 ---
 
-## How to Run the Project
+# How to Run the Project
 
-### Option 1: Maven (Development)
+### 1. Clone the repository
 
-```bash
-# Clone the repo
-git clone https://github.com/your-username/github-access-report.git
+```
+git clone https://github.com/YOUR_USERNAME/github-access-report.git
+```
+
+### 2. Navigate to the project directory
+
+```
 cd github-access-report
-
-# Set your token
-export GITHUB_TOKEN=your_token_here
-
-# Run
-./mvnw spring-boot:run
 ```
 
-The server starts at **http://localhost:8080**
+### 3. Configure GitHub Authentication
 
-### Option 2: Build and Run JAR
+Generate a **GitHub Personal Access Token**.
 
-```bash
-./mvnw clean package -DskipTests
-java -jar target/github-access-report-1.0.0.jar
+Add the token in:
+
+```
+src/main/resources/application.properties
+```
+
+```
+github.token=YOUR_GITHUB_TOKEN
+```
+
+This token is used to authenticate requests to the GitHub API.
+
+---
+
+### 4. Run the application
+
+```
+mvn spring-boot:run
+```
+
+The server will start at:
+
+```
+http://localhost:8080
 ```
 
 ---
 
-## How to Call the API Endpoints
+# API Endpoint
 
-### 1. Full Access Report
-
-Returns all users and their repository access across the organization.
+### Generate Access Report
 
 ```
-GET /api/access-report?org={orgName}
+GET /api/access-report?org={organization}
 ```
 
-**Example:**
-```bash
-curl "http://localhost:8080/api/access-report?org=google"
+Example request:
+
+```
+http://localhost:8080/api/access-report?org=spring-projects
 ```
 
-**Response:**
+---
+
+# Example Response
+
 ```json
 {
-  "organization": "google",
-  "generatedAt": "2024-01-15T10:30:00Z",
-  "totalRepositories": 120,
-  "totalUsers": 450,
-  "userAccessMap": {
-    "john_doe": [
-      {
-        "repoName": "repo-alpha",
-        "repoFullName": "google/repo-alpha",
-        "repoUrl": "https://github.com/google/repo-alpha",
-        "private": false,
-        "role": "admin"
-      }
-    ],
-    "jane_smith": [
-      {
-        "repoName": "repo-beta",
-        "repoFullName": "google/repo-beta",
-        "repoUrl": "https://github.com/google/repo-beta",
-        "private": true,
-        "role": "write"
-      }
-    ]
+  "organization": "spring-projects",
+  "generatedTime": "2026-03-09T10:30:00Z",
+  "totalRepositories": 5,
+  "totalUsers": 3,
+  "userAccess": {
+    "user1": ["repo1", "repo2"],
+    "user2": ["repo3"]
   }
 }
 ```
 
 ---
 
-### 2. Single User Access
+# Scalability Considerations
 
-Returns the list of repos a specific user has access to.
+The implementation is designed to support organizations with:
 
-```
-GET /api/access-report/user?org={orgName}&username={username}
-```
+* **100+ repositories**
+* **1000+ users with repository access**
 
-**Example:**
-```bash
-curl "http://localhost:8080/api/access-report/user?org=google&username=john_doe"
-```
-
-**Response:**
-```json
-{
-  "organization": "google",
-  "username": "john_doe",
-  "totalRepos": 3,
-  "repositories": [
-    { "repoName": "repo-alpha", "role": "admin", "private": false }
-  ]
-}
-```
+Pagination is used when fetching repositories and collaborators from the GitHub API to support large organizations.
 
 ---
 
-### 3. Health Check
+# Design Decisions
 
-```bash
-curl "http://localhost:8080/api/health"
-# {"status":"UP"}
-```
-
----
-
-## Running Tests
-
-```bash
-./mvnw test
-```
+* **Spring WebClient** was used instead of RestTemplate for efficient non-blocking HTTP requests.
+* **Pagination** was implemented to handle organizations with many repositories.
+* **Service layer abstraction** separates GitHub API communication from business logic.
+* **Caching** is used to avoid repeated API calls where possible.
 
 ---
 
-## Design Decisions
+# Assumptions
 
-### Why WebClient + Flux for parallel requests?
-GitHub API rate limits are 5,000 requests/hour for authenticated users. With 100 repos, we'd need 100+ API calls just for collaborators. Using reactive parallel streams (10 concurrent requests via `flatMap(..., concurrency=10)`) means the report generates ~10x faster while staying within rate limits.
-
-### Why Caffeine Cache?
-If the same org is queried multiple times, we avoid redundant API calls. Cache expires after 10 minutes, balancing freshness vs. performance.
-
-### Why `affiliation=all` for collaborators?
-GitHub repos can have direct collaborators, team members, and org members. Using `affiliation=all` ensures we capture everyone.
-
-### Pagination
-GitHub returns max 100 items per page. The service automatically loops through all pages until the results are exhausted.
+* Collaborators returned by the GitHub API represent users who have repository access.
+* Repository access is determined based on GitHub's collaborator data.
+* The application assumes the provided GitHub token has sufficient permissions to read organization repositories.
 
 ---
+
+# Possible Improvements
+
+* Handle GitHub API rate limiting
+* Add retry logic for API failures
+* Improve parallel API calls for better scalability
+* Add integration tests
+* Containerize the application using Docker
+
+---
+
 
 ## Project Structure
 
