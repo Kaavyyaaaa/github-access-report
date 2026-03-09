@@ -45,24 +45,28 @@ The report is exposed through a REST API endpoint in JSON format.
 
 ---
 
-# Project Structure
+
+## Project Structure
 
 ```
-src/main/java/com/githubreport
-
-controller
-    AccessReportController.java
-
-service
-    AccessReportService.java
-    GitHubClient.java
-
-model
-    GitHubRepo.java
-    RepoCollaborator.java
-
-GitHubAccessReportApplication.java
+src/
+├── main/java/com/githubreport/
+│   ├── GitHubAccessReportApplication.java   # Entry point
+│   ├── config/
+│   │   └── CacheConfig.java                 # Caffeine cache setup
+│   ├── controller/
+│   │   └── AccessReportController.java      # REST endpoints
+│   ├── model/
+│   │   ├── AccessReport.java                # Response DTO
+│   │   ├── GitHubCollaborator.java          # GitHub API model
+│   │   └── GitHubRepo.java                  # GitHub API model
+│   └── service/
+│       ├── GitHubApiClient.java             # Low-level GitHub API calls
+│       └── AccessReportService.java         # Business logic + aggregation
+└── test/
+    └── AccessReportServiceTest.java         # Unit tests
 ```
+
 
 ---
 
@@ -184,23 +188,3 @@ Pagination is used when fetching repositories and collaborators from the GitHub 
 ---
 
 
-## Project Structure
-
-```
-src/
-├── main/java/com/githubreport/
-│   ├── GitHubAccessReportApplication.java   # Entry point
-│   ├── config/
-│   │   └── CacheConfig.java                 # Caffeine cache setup
-│   ├── controller/
-│   │   └── AccessReportController.java      # REST endpoints
-│   ├── model/
-│   │   ├── AccessReport.java                # Response DTO
-│   │   ├── GitHubCollaborator.java          # GitHub API model
-│   │   └── GitHubRepo.java                  # GitHub API model
-│   └── service/
-│       ├── GitHubApiClient.java             # Low-level GitHub API calls
-│       └── AccessReportService.java         # Business logic + aggregation
-└── test/
-    └── AccessReportServiceTest.java         # Unit tests
-```
