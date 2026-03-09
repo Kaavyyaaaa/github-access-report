@@ -1,0 +1,12 @@
+com\githubreport\model\RepoCollaborator$Permissions.class
+com\githubreport\controller\AccessReportController.class
+com\githubreport\model\AccessReport.class
+com\githubreport\GitHubAccessReportApplication.class
+com\githubreport\model\RepoCollaborator.class
+com\githubreport\config\CacheConfig.class
+com\githubreport\model\GitHubRepo.class
+com\githubreport\service\GitHubClient$1.class
+com\githubreport\service\AccessReportService.class
+com\githubreport\service\GitHubClient.class
+com\githubreport\model\AccessReport$RepoAccess.class
+com\githubreport\service\GitHubClient$2.class
