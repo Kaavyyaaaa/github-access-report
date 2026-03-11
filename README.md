@@ -61,7 +61,7 @@ src/
 │   │   ├── GitHubCollaborator.java          # GitHub API model
 │   │   └── GitHubRepo.java                  # GitHub API model
 │   └── service/
-│       ├── GitHubClient.java             # Low-level GitHub API calls
+│       ├── GitHubClient.java                # Low-level GitHub API calls
 │       └── AccessReportService.java         # Business logic + aggregation
 └── test/
     └── AccessReportServiceTest.java         # Unit tests
